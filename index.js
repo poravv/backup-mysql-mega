@@ -8,7 +8,7 @@ const fetch = require('node-fetch');
 
 // Asignar fetch a globalThis
 if (!globalThis.fetch) {
-  globalThis.fetch = fetch;
+  globalThis.fetch = fetch; 
 }
 
 // Configuración de Mega
