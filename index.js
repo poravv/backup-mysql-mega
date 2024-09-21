@@ -1,4 +1,6 @@
-require('dotenv').config(); // Cargar variables de entorno
+require('dotenv').config();
+const fetch = require('node-fetch');
+globalThis.fetch = fetch;
 
 const { exec } = require('child_process');
 const fs = require('fs');
@@ -19,7 +21,7 @@ const backupDB = () => {
       return;
     }
     console.log("Backup realizado exitosamente.");
-    uploadToMega();  // Llamar para subir a Mega
+    uploadToMega();
   });
 };
 
@@ -34,7 +36,6 @@ const uploadToMega = () => {
     storage.upload('backup.sql', fs.createReadStream('./backup.sql'))
       .complete((file) => {
         console.log('Backup subido a Mega:', file.name);
-        // Eliminar el archivo de backup local si ya no es necesario
         fs.unlinkSync('./backup.sql');
       });
   });
