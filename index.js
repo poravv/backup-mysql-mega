@@ -16,20 +16,20 @@ const email = process.env.MEGA_EMAIL;
 const password = process.env.MEGA_PASSWORD;
 
 // Función para realizar el backup
-const backupDB = () => {
-    const cmd = `docker exec -i ${process.env.MYSQL_CONTAINER} /usr/bin/mysqldump -u${process.env.MYSQL_USER} -p${process.env.MYSQL_PASSWORD} ${process.env.MYSQL_DATABASE} > .backup.sql`;
+const backupDB = async () => {
+    const cmd = `docker exec -i ${process.env.MYSQL_CONTAINER} /usr/bin/mysqldump -u${process.env.MYSQL_USER} -p${process.env.MYSQL_PASSWORD} ${process.env.MYSQL_DATABASE} > backup.sql`;
 
     exec(cmd, (error, stdout, stderr) => {
         if (error) {
             console.error(`Error al hacer el backup: ${error.message}`);
             return;
         }
-        
+
         // Verificar el tamaño del archivo antes de subirlo
-        const stats = fs.statSync('.backup.sql');
+        const stats = fs.statSync('backup.sql');
         const fileSizeInMB = stats.size / (1024 * 1024);
         
-        if (fileSizeInMB > 40) { // Si el archivo es mayor a 2 MB
+        if (fileSizeInMB > 40) { // Si el archivo es mayor a 40 MB
             console.error('El archivo de backup excede el tamaño máximo permitido (40 MB).');
             return;
         }
@@ -43,15 +43,19 @@ const backupDB = () => {
 const path = require('path');
 
 const uploadToMega = async () => {
+    try {
+        const storage = await new Promise((resolve, reject) => {
+            const storageInstance = mega({
+                email: email,
+                password: password,
+                autologin: true
+            });
 
-    const storage = await new mega.Storage({
-        email: email,
-        password: password,
-        allowUploadBuffering: true, // Habilitar buffering
-    }).ready
+            storageInstance.on('ready', () => resolve(storageInstance));
+            storageInstance.on('error', (error) => reject(error));
+        });
 
-    storage.on('ready', async () => {
-        const backupFilePath = path.join(__dirname, 'backup.sql'); // Ruta relativa al archivo
+        const backupFilePath = path.join(__dirname, 'backup.sql');
         const stats = fs.statSync(backupFilePath);
         const fileSize = stats.size;
 
@@ -59,20 +63,22 @@ const uploadToMega = async () => {
         console.log('backupFilePath:', backupFilePath);
         console.log('fileSize:', fileSize);
 
-        // Realizar la subida especificando el tamaño
-        await storage.upload(backupFilePath, fs.createReadStream(backupFilePath), {
-            size: fileSize // Especificar el tamaño del archivo aquí
-        })
-        .complete((file) => {
-            console.log('Backup subido a Mega:', file.name);
-            fs.unlinkSync(backupFilePath); // Eliminar archivo local si ya no es necesario
-        })
-        .fail((error) => {
-            console.error('Error en la subida:', error); // Captura el error de subida
-        });
-    });
-};
+        const uploadStream = storage.upload({ name: 'backup.sql', size: fileSize });
 
+        fs.createReadStream(backupFilePath)
+            .pipe(uploadStream)
+            .on('complete', (file) => {
+                console.log('Backup subido a Mega:', file.name);
+                fs.unlinkSync(backupFilePath); // Eliminar archivo local
+            })
+            .on('error', (error) => {
+                console.error('Error en la subida:', error);
+            });
+
+    } catch (error) {
+        console.error('Error al conectar a Mega:', error);
+    }
+};
 
 // Programar el backup para que se ejecute diariamente a medianoche
 cron.schedule('0 0 * * *', () => {
