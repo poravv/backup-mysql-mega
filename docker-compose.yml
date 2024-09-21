@@ -14,8 +14,8 @@ services:
       - .:/usr/src/app
     restart: unless-stopped
     networks:
-      - legajo-network
+      - docker_legajo-network
 
 networks:
-  legajo-network:
+  docker_legajo-network:
     external: true
