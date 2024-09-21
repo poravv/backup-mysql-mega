@@ -42,14 +42,15 @@ const backupDB = () => {
 // Función para subir el backup a Mega
 const path = require('path');
 
-const uploadToMega = () => {
-    const storage = new mega.Storage({
+const uploadToMega = async () => {
+
+    const storage = await new mega.Storage({
         email: email,
         password: password,
         allowUploadBuffering: true, // Habilitar buffering
-    });
+    }).ready
 
-    storage.on('ready', () => {
+    storage.on('ready', async () => {
         const backupFilePath = path.join(__dirname, 'backup.sql'); // Ruta relativa al archivo
         const stats = fs.statSync(backupFilePath);
         const fileSize = stats.size;
@@ -59,7 +60,7 @@ const uploadToMega = () => {
         console.log('fileSize:', fileSize);
 
         // Realizar la subida especificando el tamaño
-        storage.upload(backupFilePath, fs.createReadStream(backupFilePath), {
+        await storage.upload(backupFilePath, fs.createReadStream(backupFilePath), {
             size: fileSize // Especificar el tamaño del archivo aquí
         })
         .complete((file) => {
