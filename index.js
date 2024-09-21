@@ -40,6 +40,9 @@ const backupDB = () => {
 };
 
 // Función para subir el backup a Mega
+const path = require('path');
+
+// Función para subir el backup a Mega
 const uploadToMega = () => {
     const storage = new mega.Storage({
         email: email,
@@ -47,14 +50,16 @@ const uploadToMega = () => {
     });
 
     storage.on('ready', () => {
-        storage.upload('/home/elporavv/workspaceandres/legajo/backup-mysql-mega/backup.sql', fs.createReadStream('/home/elporavv/workspaceandres/legajo/backup-mysql-mega/backup.sql'))
+        const backupFilePath = path.join(__dirname, 'backup.sql'); // Ruta relativa al archivo
+        storage.upload(backupFilePath, fs.createReadStream(backupFilePath))
             .complete((file) => {
                 console.log('Backup subido a Mega:', file.name);
                 // Eliminar el archivo de backup local si ya no es necesario
-                fs.unlinkSync('/home/elporavv/workspaceandres/legajo/backup-mysql-mega/backup.sql');
+                fs.unlinkSync(backupFilePath);
             });
     });
 };
+
 
 // Programar el backup para que se ejecute diariamente a medianoche
 cron.schedule('0 0 * * *', () => {
