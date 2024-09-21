@@ -1,6 +1,9 @@
 # Usa la imagen oficial de Node.js
 FROM node:14
 
+# Instala Docker CLI
+RUN apt-get update && apt-get install -y docker.io
+
 # Crea un directorio para la aplicación
 WORKDIR /usr/src/app
 
@@ -12,9 +15,6 @@ RUN npm install
 
 # Copia el resto de los archivos de la aplicación
 COPY . .
-
-# Expone el puerto si es necesario (no es necesario para este caso)
-# EXPOSE 3000
 
 # Comando para ejecutar la aplicación
 CMD ["node", "index.js"]
