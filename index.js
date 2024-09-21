@@ -17,7 +17,7 @@ const password = process.env.MEGA_PASSWORD;
 
 // Función para realizar el backup
 const backupDB = () => {
-    const cmd = `docker exec -i ${process.env.MYSQL_CONTAINER} /usr/bin/mysqldump -u${process.env.MYSQL_USER} -p${process.env.MYSQL_PASSWORD} ${process.env.MYSQL_DATABASE} > /home/elporavv/workspaceandres/legajo/backup-mysql-mega/backup.sql`;
+    const cmd = `docker exec -i ${process.env.MYSQL_CONTAINER} /usr/bin/mysqldump -u${process.env.MYSQL_USER} -p${process.env.MYSQL_PASSWORD} ${process.env.MYSQL_DATABASE} > .backup.sql`;
 
   exec(cmd, (error, stdout, stderr) => {
     if (error) {
