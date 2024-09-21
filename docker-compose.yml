@@ -12,6 +12,7 @@ services:
       - MEGA_PASSWORD=${MEGA_PASSWORD}
     volumes:
       - .:/usr/src/app
+      - /var/run/docker.sock:/var/run/docker.sock  # Monta el socket de Docker
     restart: unless-stopped
     networks:
       - docker_legajo-network

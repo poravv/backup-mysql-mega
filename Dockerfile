@@ -1,9 +1,6 @@
 # Usa la imagen oficial de Node.js
 FROM node:14
 
-# Instala Docker CLI
-RUN apt-get update && apt-get install -y docker.io
-
 # Crea un directorio para la aplicación
 WORKDIR /usr/src/app
 
