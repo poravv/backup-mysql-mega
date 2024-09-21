@@ -17,7 +17,7 @@ const password = process.env.MEGA_PASSWORD;
 
 // Función para realizar el backup
 const backupDB = async () => {
-    const cmd = `docker exec -i ${process.env.MYSQL_CONTAINER} /usr/bin/mysqldump -u${process.env.MYSQL_USER} -p${process.env.MYSQL_PASSWORD} ${process.env.MYSQL_DATABASE} > backup.sql`;
+    const cmd = `docker exec -i ${process.env.MYSQL_CONTAINER} /usr/bin/mysqldump -u${process.env.MYSQL_USER} -p${process.env.MYSQL_PASSWORD} ${process.env.MYSQL_DATABASE} > legajobk.sql`;
 
     exec(cmd, (error, stdout, stderr) => {
         if (error) {
@@ -26,7 +26,7 @@ const backupDB = async () => {
         }
 
         // Verificar el tamaño del archivo antes de subirlo
-        const stats = fs.statSync('backup.sql');
+        const stats = fs.statSync('legajobk.sql');
         const fileSizeInMB = stats.size / (1024 * 1024);
         
         if (fileSizeInMB > 40) { // Si el archivo es mayor a 40 MB
@@ -55,7 +55,7 @@ const uploadToMega = async () => {
             storageInstance.on('error', (error) => reject(error));
         });
 
-        const backupFilePath = path.join(__dirname, 'backup.sql');
+        const backupFilePath = path.join(__dirname, 'legajobk.sql');
         const stats = fs.statSync(backupFilePath);
         const fileSize = stats.size;
 
@@ -63,7 +63,24 @@ const uploadToMega = async () => {
         console.log('backupFilePath:', backupFilePath);
         console.log('fileSize:', fileSize);
 
-        const uploadStream = storage.upload({ name: 'backup.sql', size: fileSize });
+        // Verificar si el directorio existe
+        let directory = storage.root.children.find(child => child.name === 'BK');
+        
+        // Si no existe, creamos el directorio "Backups"
+        if (!directory) {
+            console.log("Directorio 'Backups' no existe, creando directorio...");
+            directory = await storage.mkdir('BK');
+        }
+
+         // Verificar o crear la subcarpeta dentro de 'Backups'
+         const subFolderName = 'legajo';  // Cambia esto a tu nombre de subcarpeta
+         let subDirectory = directory.children.find(child => child.name === subFolderName);
+         if (!subDirectory) {
+             console.log(`Subcarpeta '${subFolderName}' no existe, creando subcarpeta...`);
+             subDirectory = await directory.mkdir(subFolderName);
+         }
+
+        const uploadStream = storage.upload({ name: 'legajobk.sql', size: fileSize });
 
         fs.createReadStream(backupFilePath)
             .pipe(uploadStream)
