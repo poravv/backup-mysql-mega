@@ -13,3 +13,9 @@ services:
     volumes:
       - .:/usr/src/app
     restart: unless-stopped
+    networks:
+      - legajo-network
+
+networks:
+  legajo-network:
+    external: true
