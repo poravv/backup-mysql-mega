@@ -17,7 +17,7 @@ const password = process.env.MEGA_PASSWORD;
 
 // Función para realizar el backup
 const backupDB = () => {
-    const cmd = `docker exec -i ${process.env.MYSQL_CONTAINER} /usr/bin/mysqldump -u${process.env.MYSQL_USER} -p${process.env.MYSQL_PASSWORD} ${process.env.MYSQL_DATABASE} > ./backup.sql`;
+    const cmd = `docker exec -i ${process.env.MYSQL_CONTAINER} /usr/bin/mysqldump -u${process.env.MYSQL_USER} -p${process.env.MYSQL_PASSWORD} ${process.env.MYSQL_DATABASE} > /home/elporavv/workspaceandres/legajo/backup-mysql-mega/backup.sql`;
 
   exec(cmd, (error, stdout, stderr) => {
     if (error) {
@@ -37,11 +37,11 @@ const uploadToMega = () => {
   });
 
   storage.on('ready', () => {
-    storage.upload('backup.sql', fs.createReadStream('./backup.sql'))
+    storage.upload('/home/elporavv/workspaceandres/legajo/backup-mysql-mega/backup.sql', fs.createReadStream('/home/elporavv/workspaceandres/legajo/backup-mysql-mega/backup.sql'))
       .complete((file) => {
         console.log('Backup subido a Mega:', file.name);
         // Eliminar el archivo de backup local si ya no es necesario
-        fs.unlinkSync('./backup.sql');
+        fs.unlinkSync('/home/elporavv/workspaceandres/legajo/backup-mysql-mega/backup.sql');
       });
   });
 };
