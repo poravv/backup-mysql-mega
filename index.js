@@ -19,37 +19,47 @@ const password = process.env.MEGA_PASSWORD;
 const backupDB = () => {
     const cmd = `docker exec -i ${process.env.MYSQL_CONTAINER} /usr/bin/mysqldump -u${process.env.MYSQL_USER} -p${process.env.MYSQL_PASSWORD} ${process.env.MYSQL_DATABASE} > .backup.sql`;
 
-  exec(cmd, (error, stdout, stderr) => {
-    if (error) {
-      console.error(`Error al hacer el backup: ${error.message}`);
-      return;
-    }
-    console.log("Backup realizado exitosamente.");
-    uploadToMega();  // Llamar para subir a Mega
-  });
+    exec(cmd, (error, stdout, stderr) => {
+        if (error) {
+            console.error(`Error al hacer el backup: ${error.message}`);
+            return;
+        }
+        
+        // Verificar el tamaño del archivo antes de subirlo
+        const stats = fs.statSync('.backup.sql');
+        const fileSizeInMB = stats.size / (1024 * 1024);
+        
+        if (fileSizeInMB > 2) { // Si el archivo es mayor a 2 MB
+            console.error('El archivo de backup excede el tamaño máximo permitido (2 MB).');
+            return;
+        }
+        
+        console.log("Backup realizado exitosamente.");
+        uploadToMega();  // Llamar para subir a Mega
+    });
 };
 
 // Función para subir el backup a Mega
 const uploadToMega = () => {
-  const storage = new mega.Storage({
-    email: email,
-    password: password,
-  });
+    const storage = new mega.Storage({
+        email: email,
+        password: password,
+    });
 
-  storage.on('ready', () => {
-    storage.upload('/home/elporavv/workspaceandres/legajo/backup-mysql-mega/backup.sql', fs.createReadStream('/home/elporavv/workspaceandres/legajo/backup-mysql-mega/backup.sql'))
-      .complete((file) => {
-        console.log('Backup subido a Mega:', file.name);
-        // Eliminar el archivo de backup local si ya no es necesario
-        fs.unlinkSync('/home/elporavv/workspaceandres/legajo/backup-mysql-mega/backup.sql');
-      });
-  });
+    storage.on('ready', () => {
+        storage.upload('/home/elporavv/workspaceandres/legajo/backup-mysql-mega/backup.sql', fs.createReadStream('/home/elporavv/workspaceandres/legajo/backup-mysql-mega/backup.sql'))
+            .complete((file) => {
+                console.log('Backup subido a Mega:', file.name);
+                // Eliminar el archivo de backup local si ya no es necesario
+                fs.unlinkSync('/home/elporavv/workspaceandres/legajo/backup-mysql-mega/backup.sql');
+            });
+    });
 };
 
 // Programar el backup para que se ejecute diariamente a medianoche
 cron.schedule('0 0 * * *', () => {
-  console.log('Iniciando el backup...');
-  backupDB();
+    console.log('Iniciando el backup...');
+    backupDB();
 });
 
 // Ejecutar la función una vez al iniciar la aplicación
