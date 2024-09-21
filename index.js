@@ -1,11 +1,15 @@
-require('dotenv').config();
-const fetch = require('node-fetch');
-globalThis.fetch = fetch;
+require('dotenv').config(); // Cargar variables de entorno
 
 const { exec } = require('child_process');
 const fs = require('fs');
 const cron = require('node-cron');
 const mega = require('megajs');
+const fetch = require('node-fetch');
+
+// Asignar fetch a globalThis
+if (!globalThis.fetch) {
+  globalThis.fetch = fetch;
+}
 
 // Configuración de Mega
 const email = process.env.MEGA_EMAIL;
@@ -21,7 +25,7 @@ const backupDB = () => {
       return;
     }
     console.log("Backup realizado exitosamente.");
-    uploadToMega();
+    uploadToMega();  // Llamar para subir a Mega
   });
 };
 
@@ -36,6 +40,7 @@ const uploadToMega = () => {
     storage.upload('backup.sql', fs.createReadStream('./backup.sql'))
       .complete((file) => {
         console.log('Backup subido a Mega:', file.name);
+        // Eliminar el archivo de backup local si ya no es necesario
         fs.unlinkSync('./backup.sql');
       });
   });
