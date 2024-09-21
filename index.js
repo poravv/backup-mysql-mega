@@ -47,9 +47,11 @@ const uploadToMega = () => {
     const storage = new mega.Storage({
         email: email,
         password: password,
+        allowUploadBuffering: true, // Habilitar buffering
     });
 
     storage.on('ready', () => {
+        console.log('Inicio de subida a Mega');
         const backupFilePath = path.join(__dirname, 'backup.sql'); // Ruta relativa al archivo
         storage.upload(backupFilePath, fs.createReadStream(backupFilePath))
             .complete((file) => {
@@ -59,6 +61,7 @@ const uploadToMega = () => {
             });
     });
 };
+
 
 
 // Programar el backup para que se ejecute diariamente a medianoche
