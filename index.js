@@ -13,18 +13,22 @@ const password = process.env.MEGA_PASSWORD;
 const backupDB = () => {
     const cmd = `docker exec -i ${process.env.MYSQL_CONTAINER} /usr/bin/mysqldump -u${process.env.MYSQL_USER} -p${process.env.MYSQL_PASSWORD} ${process.env.MYSQL_DATABASE} > backup.sql`;
 
+
     exec(cmd, (error, stdout, stderr) => {
         if (error) {
             console.error(`Error al hacer el backup: ${error.message}`);
             return;
         }
         console.log("Backup realizado exitosamente.");
+
         uploadToMega();  // Llamar para subir a Mega
     });
 };
 
 // Función para subir el backup a Mega
 const uploadToMega = () => {
+    console.log('Preparando subida a Mega con credenciales:', email, password);
+
     const storage = mega({ email, password });
 
     storage.on('ready', () => {
