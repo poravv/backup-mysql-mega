@@ -55,19 +55,23 @@ const uploadToMega = () => {
         const fileSize = stats.size;
 
         console.log('Inicio de subida a Mega');
-        console.log('backupFilePath: ',backupFilePath);
-        console.log('stats: ',stats);
-        console.log('fileSize: ',fileSize);
+        console.log('backupFilePath:', backupFilePath);
+        console.log('fileSize:', fileSize);
 
-        const uploadFile = storage.upload(backupFilePath, fs.createReadStream(backupFilePath));
-        uploadFile.size = fileSize; // Especificar el tamaño del archivo directamente
-
-        uploadFile.complete((file) => {
+        // Realizar la subida especificando el tamaño
+        storage.upload(backupFilePath, fs.createReadStream(backupFilePath), {
+            size: fileSize // Especificar el tamaño del archivo aquí
+        })
+        .complete((file) => {
             console.log('Backup subido a Mega:', file.name);
             fs.unlinkSync(backupFilePath); // Eliminar archivo local si ya no es necesario
+        })
+        .fail((error) => {
+            console.error('Error en la subida:', error); // Captura el error de subida
         });
     });
 };
+
 
 // Programar el backup para que se ejecute diariamente a medianoche
 cron.schedule('0 0 * * *', () => {
