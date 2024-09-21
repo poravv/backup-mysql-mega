@@ -51,16 +51,25 @@ const uploadToMega = () => {
     });
 
     storage.on('ready', () => {
-        console.log('Inicio de subida a Mega');
         const backupFilePath = path.join(__dirname, 'backup.sql'); // Ruta relativa al archivo
-        storage.upload(backupFilePath, fs.createReadStream(backupFilePath))
-            .complete((file) => {
-                console.log('Backup subido a Mega:', file.name);
-                // Eliminar el archivo de backup local si ya no es necesario
-                fs.unlinkSync(backupFilePath);
-            });
+
+        // Obtener el tamaño del archivo
+        const stats = fs.statSync(backupFilePath);
+        const fileSize = stats.size;
+
+        console.log('Inicio de subida a Mega');
+
+        storage.upload(backupFilePath, fs.createReadStream(backupFilePath), {
+            size: fileSize // Especificar el tamaño del archivo
+        })
+        .complete((file) => {
+            console.log('Backup subido a Mega:', file.name);
+            // Eliminar el archivo de backup local si ya no es necesario
+            fs.unlinkSync(backupFilePath);
+        });
     });
 };
+
 
 
 
