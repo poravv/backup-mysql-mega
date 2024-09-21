@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  backup-app:
+    build: .
+    environment:
+      - MYSQL_CONTAINER=${MYSQL_CONTAINER}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MEGA_EMAIL=${MEGA_EMAIL}
+      - MEGA_PASSWORD=${MEGA_PASSWORD}
+    volumes:
+      - .:/usr/src/app
+    restart: unless-stopped
