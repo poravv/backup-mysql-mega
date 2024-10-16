@@ -20,12 +20,12 @@ const password = process.env.MEGA_PASSWORD;
 const generateBackupFileName = () => {
     const date = new Date();
     const timestamp = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}_${date.getHours().toString().padStart(2, '0')}-${date.getMinutes().toString().padStart(2, '0')}`;
-    return `vendelobk_${timestamp}.sql`; // Nombre de archivo con timestamp
+    return `legajobk_${timestamp}.sql`; // Nombre de archivo con timestamp
 };
 
 // Función para realizar el backup
 const backupDB = async () => {
-    const backupFileName = generateBackupFileName();
+    const backupFileName = generateBackupFileName(); 
     const backupFilePath = path.join(__dirname, backupFileName);
     
     const cmd = `docker exec -i ${process.env.MYSQL_CONTAINER} /usr/bin/mysqldump -u${process.env.MYSQL_USER} -p${process.env.MYSQL_PASSWORD} ${process.env.MYSQL_DATABASE} > ${backupFilePath}`;
@@ -81,14 +81,14 @@ const uploadToMega = async (backupFilePath, backupFileName) => {
         }
 
         // Verificar o crear la subcarpeta dentro de 'BK'
-        const subFolderName = 'vendelo';  // Cambia esto a tu nombre de subcarpeta
+        const subFolderName = 'legajo';  // Cambia esto a tu nombre de subcarpeta
         let subDirectory = directory.children.find(child => child.name === subFolderName);
         if (!subDirectory) {
             console.log(`Subcarpeta '${subFolderName}' no existe, creando subcarpeta...`);
             subDirectory = await directory.mkdir(subFolderName);
         }
 
-        // Subir el archivo dentro de la subcarpeta 'vendelo'
+        // Subir el archivo dentro de la subcarpeta 'legajo'
         const uploadStream = subDirectory.upload({ name: backupFileName, size: fileSize });
 
         fs.createReadStream(backupFilePath)
