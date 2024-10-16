@@ -40,8 +40,8 @@ const backupDB = async () => {
         const stats = fs.statSync(backupFilePath);
         const fileSizeInMB = stats.size / (1024 * 1024);
         
-        if (fileSizeInMB > 40) { // Si el archivo es mayor a 40 MB
-            console.error('El archivo de backup excede el tamaño máximo permitido (40 MB).');
+        if (fileSizeInMB > 2048) { // Si el archivo es mayor a 40 MB
+            console.error('El archivo de backup excede el tamaño máximo permitido (2 GB).');
             return;
         }
         
